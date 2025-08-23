@@ -6,17 +6,23 @@ export type FileInput = Buffer | Readable | string;
 // --- Add a template literal type for Replicate model references ---
 type ModelRef = `${string}/${string}` | `${string}/${string}:${string}`;
 
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable ${name}`);
+  }
+  return value;
+}
+
 // Export the client so tests can stub its methods
 export const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN
+  auth: requireEnv("REPLICATE_API_TOKEN")
 });
 
 // Cast env-provided model IDs to the stricter ModelRef type
-const DEPTH_MODEL: ModelRef =
-  (process.env.REPLICATE_DEPTH_MODEL ?? "chenxwh/depth-anything-v2") as ModelRef;
+const DEPTH_MODEL: ModelRef = requireEnv("REPLICATE_DEPTH_MODEL") as ModelRef;
 
-const CONTROLNET_MODEL: ModelRef =
-  (process.env.REPLICATE_CONTROLNET_DEPTH_MODEL ?? "lucataco/sdxl-controlnet-depth") as ModelRef;
+const CONTROLNET_MODEL: ModelRef = requireEnv("REPLICATE_CONTROLNET_DEPTH_MODEL") as ModelRef;
 
 export async function runDepthAnythingV2(image: FileInput, modelSize: "Large" | "Base" = "Large"): Promise<string> {
   const out = await replicate.run(DEPTH_MODEL, { input: { image, model: modelSize } }) as any;
