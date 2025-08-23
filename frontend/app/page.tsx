@@ -6,7 +6,7 @@ import Controls from "@/components/Controls";
 import CompareSlider from "@/components/CompareSlider";
 import type { EnhanceSettings, EnhanceResponse } from "@/lib/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8787";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
 
 export default function Page() {
   const [file, setFile] = useState<File | null>(null);
