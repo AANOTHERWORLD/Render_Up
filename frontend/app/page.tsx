@@ -23,21 +23,18 @@ export default function Page() {
   const handleRun = async () => {
     if (!file) return;
     setLoading(true); setError(null); setResult(null);
-    const arrayBuffer = await file.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    const payload = {
-      image: `data:${file.type};base64,${base64}`,
-      preset: settings.preset,
-      strength: settings.strength,
-      preserveComposition: settings.preserveComposition,
-      upscale: settings.upscale,
-    };
+
+    const form = new FormData();
+    form.append("image", file);
+    form.append("preset", settings.preset);
+    form.append("strength", settings.strength.toString());
+    form.append("preserveComposition", String(settings.preserveComposition));
+    form.append("upscale", settings.upscale);
 
     try {
       const res = await fetch(`${API_BASE}/enhance`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: form
       });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json() as EnhanceResponse;
