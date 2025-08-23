@@ -6,9 +6,14 @@ export type FileInput = Buffer | Readable | string;
 // --- Add a template literal type for Replicate model references ---
 type ModelRef = `${string}/${string}` | `${string}/${string}:${string}`;
 
-function requireEnv(name: string): string {
+/**
+ * Fetch an environment variable, falling back to a default when provided.
+ * Throws if the variable is missing and no fallback value is supplied.
+ */
+function getEnv(name: string, fallback?: string): string {
   const value = process.env[name];
-  if (!value) {
+  if (value === undefined || value === "") {
+    if (fallback !== undefined) return fallback;
     throw new Error(`Missing required environment variable ${name}`);
   }
   return value;
@@ -16,13 +21,21 @@ function requireEnv(name: string): string {
 
 // Export the client so tests can stub its methods
 export const replicate = new Replicate({
-  auth: requireEnv("REPLICATE_API_TOKEN")
+  // Allow tests or local development to omit the token by providing a blank string
+  auth: getEnv("REPLICATE_API_TOKEN", "")
 });
 
-// Cast env-provided model IDs to the stricter ModelRef type
-const DEPTH_MODEL: ModelRef = requireEnv("REPLICATE_DEPTH_MODEL") as ModelRef;
+// Cast env-provided model IDs to the stricter ModelRef type. Defaults are
+// public model references so the app can run without custom configuration.
+const DEPTH_MODEL: ModelRef = getEnv(
+  "REPLICATE_DEPTH_MODEL",
+  "nvidia/Depth-Anything-V2"
+) as ModelRef;
 
-const CONTROLNET_MODEL: ModelRef = requireEnv("REPLICATE_CONTROLNET_DEPTH_MODEL") as ModelRef;
+const CONTROLNET_MODEL: ModelRef = getEnv(
+  "REPLICATE_CONTROLNET_DEPTH_MODEL",
+  "stability-ai/sdxl-controlnet-depth"
+) as ModelRef;
 
 export interface DepthAnythingV2ResponseObject {
   image?: string;
