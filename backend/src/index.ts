@@ -1,7 +1,7 @@
 import * as http from "node:http";
 import { randomUUID } from "node:crypto";
 import Busboy from "busboy";
-import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate.js";
+import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 interface RequestBody {
   [key: string]: any;
