@@ -4,9 +4,16 @@ import assert from 'node:assert/strict';
 import { runSDXLControlNetDepth, replicate } from './replicate.ts';
 
 test('runSDXLControlNetDepth applies defaults when options undefined', async () => {
-  const runMock = mock.method(replicate as any, 'run', async (_model, opts) => {
-    return ['img'];
-  });
+  const runMock = mock.method(
+    replicate,
+    'run',
+    async (
+      _model: Parameters<typeof replicate.run>[0],
+      opts: Parameters<typeof replicate.run>[1]
+    ): Promise<object> => {
+      return ['img'] as unknown as object;
+    }
+  );
 
   const res = await runSDXLControlNetDepth({
     image: 'img',
