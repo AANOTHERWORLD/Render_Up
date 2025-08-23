@@ -24,7 +24,7 @@ test('runSDXLControlNetDepth applies defaults when options undefined', async () 
 
   assert.deepEqual(res, ['img']);
   assert.equal(runMock.mock.calls.length, 1);
-  const input = runMock.mock.calls[0].arguments[1].input;
+  const input = (runMock.mock.calls[0].arguments[1] as any).input as any;
   assert.equal(input.guidance_scale, 7);
   assert.equal(input.num_inference_steps, 30);
   assert.equal(input.controlnet_conditioning_scale, 1.0);

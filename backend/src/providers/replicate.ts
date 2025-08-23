@@ -47,7 +47,7 @@ export async function runDepthAnythingV2(
   if (typeof out === "string") return out;
   if (Array.isArray(out) && out.length > 0) return out[0];
 
-  if (typeof out === "object" && out !== null) {
+  if (!Array.isArray(out) && typeof out === "object" && out !== null) {
     if (typeof out.image === "string") return out.image;
     if (Array.isArray(out.images) && out.images.length > 0) return out.images[0];
     if (typeof out.depth_map === "string") return out.depth_map;
