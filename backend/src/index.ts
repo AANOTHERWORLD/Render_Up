@@ -1,9 +1,15 @@
 import * as http from "node:http";
 import { randomUUID } from "node:crypto";
+import Busboy from "busboy";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate.js";
 
 interface RequestBody {
   [key: string]: any;
+}
+
+interface ParsedForm {
+  fields: Record<string, string>;
+  file?: Buffer;
 }
 
 type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
@@ -11,13 +17,47 @@ type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
 const PRESET_PROMPTS: Record<LightingPreset, string> = {
   neutral_overcast: "neutral overcast lighting, photoreal architecture",
   golden_hour: "warm golden hour lighting, photoreal architecture",
-  dramatic_contrast: "dramatic high contrast lighting, photoreal architecture"
+  dramatic_contrast: "dramatic high contrast lighting, photoreal architecture",
 };
+
+function parseMultipart(req: http.IncomingMessage): Promise<ParsedForm> {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: req.headers, limits: { files: 1 } });
+    const fields: Record<string, string> = {};
+    let fileBuffer: Buffer | undefined;
+
+    busboy.on("field", (name, value) => {
+      fields[name] = value;
+    });
+
+    busboy.on("file", (name, file) => {
+      if (name !== "image") {
+        file.resume();
+        return;
+      }
+      const chunks: Buffer[] = [];
+      file.on("data", chunk => chunks.push(chunk));
+      file.on("end", () => {
+        fileBuffer = Buffer.concat(chunks);
+      });
+    });
+
+    busboy.on("finish", () => {
+      resolve({ fields, file: fileBuffer });
+    });
+
+    busboy.on("error", reject);
+
+    req.pipe(busboy);
+  });
+}
 
 function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
   return new Promise((resolve, reject) => {
     let data = "";
-    req.on("data", chunk => { data += chunk; });
+    req.on("data", chunk => {
+      data += chunk;
+    });
     req.on("end", () => {
       try {
         resolve(data ? JSON.parse(data) : {});
@@ -48,27 +88,34 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && req.url === "/enhance") {
-      const body = await parseJson(req);
-      const image = body.image;
-      const preset = body.preset as LightingPreset;
-      const strength = body.strength !== undefined ? Number(body.strength) : undefined;
-      const preserveComposition = body.preserveComposition === true || body.preserveComposition === "true";
-      const upscale = body.upscale;
+      const { fields, file } = await parseMultipart(req);
+      if (!file) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ error: "Missing image" }));
+        return;
+      }
 
-      const depthUrl = await runDepthAnythingV2(image);
+      const preset = fields.preset as LightingPreset;
+      const strength = fields.strength ? Number(fields.strength) : undefined;
+      const preserveComposition = fields.preserveComposition === "true";
+      const upscale = fields.upscale;
+
+      const depthUrl = await runDepthAnythingV2(file);
       const prompt = PRESET_PROMPTS[preset] || "";
       const images = await runSDXLControlNetDepth({
-        image,
+        image: file,
         control_image: depthUrl,
         prompt,
-        strength
+        strength,
+        controlnet_conditioning_scale: preserveComposition ? 1 : 0.5,
       });
 
       const response = {
         requestId: randomUUID(),
         images,
         meta: { preset, strength, preserveComposition, upscale },
-        depthUrl
+        depthUrl,
       };
 
       res.setHeader("Content-Type", "application/json");
