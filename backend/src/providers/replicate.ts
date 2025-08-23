@@ -37,6 +37,13 @@ const CONTROLNET_MODEL: ModelRef = getEnv(
   "stability-ai/sdxl-controlnet-depth"
 ) as ModelRef;
 
+// Normalize Replicate file outputs into plain URLs
+function toUrl(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (value) return String(value);
+  return undefined;
+}
+
 export interface DepthAnythingV2ResponseObject {
   image?: string;
   images?: string[];
@@ -58,14 +65,19 @@ export async function runDepthAnythingV2(
   })) as unknown as DepthAnythingV2Response;
 
   if (typeof out === "string") return out;
-  if (Array.isArray(out) && out.length > 0) return out[0];
+  if (Array.isArray(out) && out.length > 0) {
+    const url = toUrl(out[0]);
+    if (url) return url;
+  }
 
   if (!Array.isArray(out) && typeof out === "object" && out !== null) {
-    if (typeof out.image === "string") return out.image;
-    if (Array.isArray(out.images) && out.images.length > 0) return out.images[0];
-    if (typeof out.depth_map === "string") return out.depth_map;
-    if (typeof out.output === "string") return out.output;
-    if (Array.isArray(out.output) && out.output.length > 0) return out.output[0];
+    const url =
+      toUrl((out as any).image) ||
+      (Array.isArray((out as any).images) && toUrl((out as any).images[0])) ||
+      toUrl((out as any).depth_map) ||
+      toUrl((out as any).output) ||
+      (Array.isArray((out as any).output) && toUrl((out as any).output[0]));
+    if (url) return url;
   }
 
   throw new Error("Unexpected depth model output shape");
@@ -106,9 +118,9 @@ export async function runSDXLControlNetDepth(input: ControlNetDepthInput): Promi
 
   if (typeof out === "object" && out !== null) {
     if (Array.isArray(out.images)) return out.images.map(String);
-    if (typeof out.image === "string") return [out.image];
-    if (Array.isArray(out.output)) return out.output.map(String);
-    if (typeof out.output === "string") return [out.output];
+    if ((out as any).image !== undefined) return [String((out as any).image)];
+    if (Array.isArray((out as any).output)) return (out as any).output.map(String);
+    if (typeof (out as any).output === "string") return [(out as any).output];
   }
 
   throw new Error("Unexpected ControlNet output shape");
