@@ -70,6 +70,16 @@ function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
 }
 
 const server = http.createServer(async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+
   try {
     if (req.method === "POST" && req.url === "/depth") {
       const body = await parseJson(req);
