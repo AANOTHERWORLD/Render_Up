@@ -1,40 +1,78 @@
 import * as http from "node:http";
+import { randomUUID } from "node:crypto";
+import Busboy from "busboy";
+
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate.js";
 
-interface RequestBody {
-  [key: string]: any;
+interface ParsedForm {
+  fields: Record<string, string>;
+  file?: Buffer;
 }
 
-function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
+function parseMultipart(req: http.IncomingMessage): Promise<ParsedForm> {
   return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", chunk => { data += chunk; });
-    req.on("end", () => {
-      try {
-        resolve(data ? JSON.parse(data) : {});
-      } catch (err) {
-        reject(err);
-      }
+    const busboy = Busboy({ headers: req.headers, limits: { files: 1 } });
+    const fields: Record<string, string> = {};
+    let fileBuffer: Buffer | undefined;
+
+    busboy.on("field", (name, value) => {
+      fields[name] = value;
     });
-    req.on("error", reject);
+
+    busboy.on("file", (name, file) => {
+      if (name !== "image") {
+        file.resume();
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      file.on("data", chunk => chunks.push(chunk));
+      file.on("end", () => {
+        fileBuffer = Buffer.concat(chunks);
+      });
+    });
+
+    busboy.on("finish", () => {
+      resolve({ fields, file: fileBuffer });
+    });
+
+    busboy.on("error", reject);
+
+    req.pipe(busboy);
   });
 }
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.method === "POST" && req.url === "/depth") {
-      const body = await parseJson(req);
-      const output = await runDepthAnythingV2(body.image, body.modelSize);
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ output }));
-      return;
-    }
+    if (req.method === "POST" && req.url === "/enhance") {
+      const { fields, file } = await parseMultipart(req);
+      if (!file) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ error: "Missing image" }));
+        return;
+      }
 
-    if (req.method === "POST" && req.url === "/controlnet") {
-      const body = await parseJson(req);
-      const output = await runSDXLControlNetDepth(body as any);
+      const depthUrl = await runDepthAnythingV2(file);
+
+      const images = await runSDXLControlNetDepth({
+        image: file,
+        control_image: depthUrl,
+        prompt: fields.preset || "",
+        strength: fields.strength ? Number(fields.strength) : undefined,
+        controlnet_conditioning_scale:
+          fields.preserveComposition === "true" ? 1 : 0.5,
+      });
+
+      const response = {
+        requestId: randomUUID(),
+        images,
+        meta: fields,
+        depthUrl,
+      };
+
       res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ output }));
+      res.end(JSON.stringify(response));
       return;
     }
 

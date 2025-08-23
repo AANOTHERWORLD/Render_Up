@@ -17,6 +17,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "replicate": "^1.1.0"
+    "replicate": "^1.1.0",
+    "busboy": "^1.6.0"
   }
 }
