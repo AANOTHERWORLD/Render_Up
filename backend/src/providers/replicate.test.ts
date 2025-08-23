@@ -1,7 +1,7 @@
 import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { runSDXLControlNetDepth, replicate } from './replicate.ts';
+import { runSDXLControlNetDepth, replicate } from './replicate';
 
 test('runSDXLControlNetDepth applies defaults when options undefined', async () => {
   const runMock = mock.method(replicate as any, 'run', async (_model, opts) => {
