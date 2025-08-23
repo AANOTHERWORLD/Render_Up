@@ -6,7 +6,8 @@ export type FileInput = Buffer | Readable | string;
 // --- Add a template literal type for Replicate model references ---
 type ModelRef = `${string}/${string}` | `${string}/${string}:${string}`;
 
-const replicate = new Replicate({
+// Export the client so tests can stub its methods
+export const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN
 });
 
@@ -37,7 +38,10 @@ export interface ControlNetDepthInput {
 
 export async function runSDXLControlNetDepth(input: ControlNetDepthInput): Promise<string[]> {
   const defaults = { num_inference_steps: 30, guidance_scale: 7, controlnet_conditioning_scale: 1.0 };
-  const out = await replicate.run(CONTROLNET_MODEL, { input: { ...defaults, ...input } }) as any;
+  const filtered = Object.fromEntries(
+    Object.entries(input).filter(([, v]) => v !== undefined)
+  );
+  const out = await replicate.run(CONTROLNET_MODEL, { input: { ...defaults, ...filtered } }) as any;
   if (Array.isArray(out)) return out.map(String);
   if (typeof out === "string") return [out];
   if (out?.images && Array.isArray(out.images)) return out.images;
