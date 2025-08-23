@@ -1,9 +1,18 @@
 import * as http from "node:http";
+import { randomUUID } from "node:crypto";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate.js";
 
 interface RequestBody {
   [key: string]: any;
 }
+
+type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
+
+const PRESET_PROMPTS: Record<LightingPreset, string> = {
+  neutral_overcast: "neutral overcast lighting, photoreal architecture",
+  golden_hour: "warm golden hour lighting, photoreal architecture",
+  dramatic_contrast: "dramatic high contrast lighting, photoreal architecture"
+};
 
 function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
   return new Promise((resolve, reject) => {
@@ -35,6 +44,35 @@ const server = http.createServer(async (req, res) => {
       const output = await runSDXLControlNetDepth(body as any);
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ output }));
+      return;
+    }
+
+    if (req.method === "POST" && req.url === "/enhance") {
+      const body = await parseJson(req);
+      const image = body.image;
+      const preset = body.preset as LightingPreset;
+      const strength = body.strength !== undefined ? Number(body.strength) : undefined;
+      const preserveComposition = body.preserveComposition === true || body.preserveComposition === "true";
+      const upscale = body.upscale;
+
+      const depthUrl = await runDepthAnythingV2(image);
+      const prompt = PRESET_PROMPTS[preset] || "";
+      const images = await runSDXLControlNetDepth({
+        image,
+        control_image: depthUrl,
+        prompt,
+        strength
+      });
+
+      const response = {
+        requestId: randomUUID(),
+        images,
+        meta: { preset, strength, preserveComposition, upscale },
+        depthUrl
+      };
+
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(response));
       return;
     }
 
