@@ -5,9 +5,23 @@ Turn architectural renderings into photoreal images with improved lighting and m
 ## What is included
 
 - `frontend` Next.js app with a simple UI: upload, select lighting preset, strength, preserve toggle, size, compare slider.
-- `backend` Node/Express TypeScript server calling Replicate:
+- `backend` TypeScript HTTP server (no Express) calling Replicate:
   - Depth Anything V2 for depth
   - SDXL ControlNet Depth for faithful regeneration
+
+## Environment variables
+
+**Backend**
+
+- `REPLICATE_API_TOKEN` – required API token for Replicate
+- `REPLICATE_DEPTH_MODEL` – optional depth model override
+- `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
+- `PORT` – optional port (defaults to `8787`)
+- `ALLOWED_ORIGIN` – optional CORS origin (defaults to `http://localhost:3000`)
+
+**Frontend**
+
+- `NEXT_PUBLIC_API_BASE_URL` – URL for the backend server
 
 ## Local run
 
@@ -17,7 +31,8 @@ Turn architectural renderings into photoreal images with improved lighting and m
    cp .env.example .env
    # configure PORT, ALLOWED_ORIGIN, REPLICATE_API_TOKEN and model IDs
    npm install
-   npm run dev
+   npm run build
+   npm start
    ```
 
 2. Frontend
@@ -33,7 +48,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 
 ## Deploy
 
-- Backend on Railway. Set env vars from `.env.example`.
+- Backend on Railway. Set the environment variables described above.
 - Frontend on Vercel. Set `NEXT_PUBLIC_API_BASE_URL` to the Railway service URL.
 
 ## Notes
