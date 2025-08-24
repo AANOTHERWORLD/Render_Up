@@ -2,6 +2,7 @@ import * as http from "node:http";
 import { randomUUID } from "node:crypto";
 import Busboy from "busboy";
 import sizeOf from "image-size";
+import cors from "cors";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 interface RequestBody {
@@ -70,10 +71,17 @@ function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
   });
 }
 
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "https://example.com";
+const corsMiddleware = cors({
+  origin: ALLOWED_ORIGIN,
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+});
+
 const server = http.createServer(async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  await new Promise<void>((resolve, reject) =>
+    corsMiddleware(req as any, res as any, err => (err ? reject(err) : resolve()))
+  );
 
   if (req.method === "OPTIONS") {
     res.statusCode = 204;

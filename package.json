@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/busboy": "^1.5.4",
+    "@types/cors": "^2.8.17",
     "@types/node": "^24.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
@@ -20,6 +21,7 @@
   "dependencies": {
     "busboy": "^1.6.0",
     "image-size": "^2.0.2",
+    "cors": "^2.8.5",
     "replicate": "^1.1.0"
   }
 }
