@@ -27,6 +27,7 @@ export const replicate = new Replicate({
 
 // Cast env-provided model IDs to the stricter ModelRef type. Defaults are
 // public model references so the app can run without custom configuration.
+// Replicate model slugs are lowercase; normalize env override to prevent 404s
 const DEPTH_MODEL: ModelRef = getEnv(
   "REPLICATE_DEPTH_MODEL",
 
