@@ -39,7 +39,10 @@ const DEPTH_MODEL: ModelRef = getEnv(
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
   "REPLICATE_CONTROLNET_DEPTH_MODEL",
-  "jagilley/controlnet-depth-sdxl"
+  // Pinned model version so Replicate's API doesn't require a version lookup
+  // which can return 404s when the model-specific predictions endpoint is
+  // unavailable.
+  "jagilley/controlnet-depth-sdxl:9ca98281fa9ba02b96c8a17cc4430ebdc80bd048393ca5c7d07212e08a3b3fc3"
 ).toLowerCase() as ModelRef;
 
 /**
