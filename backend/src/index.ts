@@ -4,9 +4,11 @@ import multer from "multer";
 import pino from "pino";
 import pinoHttp from "pino-http";
 import { randomUUID } from "node:crypto";
+
 import sizeOf from "image-size";
 import cors from "cors";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
+
 
 type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
 
@@ -16,22 +18,6 @@ const PRESET_PROMPTS: Record<LightingPreset, string> = {
   dramatic_contrast: "dramatic high contrast lighting, photoreal architecture",
 };
 
-const app = express();
-
-const logger = pino();
-app.use(
-  pinoHttp({
-    logger,
-    genReqId: () => randomUUID(),
-    customProps: req => ({
-      requestId: req.id,
-      params: { ...req.params, ...req.query, ...(req.body || {}) },
-    }),
-  })
-);
-
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
-app.use(express.json());
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -53,6 +39,7 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
       res.status(400).json({ error: "Missing image" });
       return;
     }
+
 
 
         }
