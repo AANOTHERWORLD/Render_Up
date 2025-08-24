@@ -37,25 +37,12 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
-app.post("/depth", async (req, res) => {
-  try {
-    const output = await runDepthAnythingV2(req.body.image, req.body.modelSize);
-    res.json({ output });
-  } catch (err) {
-    req.log.error(err as Error);
-    res.status(500).json({ error: (err as Error).message });
   }
 });
 
 app.post("/controlnet", async (req, res) => {
   try {
-    const output = await runSDXLControlNetDepth(req.body);
-    res.json({ output });
-  } catch (err) {
-    req.log.error(err as Error);
-    res.status(500).json({ error: (err as Error).message });
-  }
-});
+
 
 app.post("/enhance", upload.single("image"), async (req, res) => {
   try {
