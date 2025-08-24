@@ -65,22 +65,7 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
       return;
     }
 
-    const preset = req.body.preset as LightingPreset;
-    const strength = req.body.strength ? Number(req.body.strength) : undefined;
-    const preserveComposition = req.body.preserveComposition === "true";
-    const upscale = req.body.upscale;
 
-    let width: number | undefined;
-    let height: number | undefined;
-    try {
-      const size = sizeOf(file);
-      width = size.width;
-      height = size.height;
-      if (upscale && upscale !== "native" && width && height) {
-        const factor = parseFloat(upscale);
-        if (!isNaN(factor)) {
-          width = Math.round(width * factor);
-          height = Math.round(height * factor);
         }
       }
       if (width && height) {
