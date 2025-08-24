@@ -42,7 +42,7 @@ const CONTROLNET_MODEL: ModelRef = getEnv(
   // Pinned model version so Replicate's API doesn't require a version lookup
   // which can return 404s when the model-specific predictions endpoint is
   // unavailable.
-  "jagilley/controlnet-depth-sdxl:9ca98281fa9ba02b96c8a17cc4430ebdc80bd048393ca5c7d07212e08a3b3fc3"
+  "lucataco/sdxl-controlnet-depth:465fb41789dc2203a9d7158be11d1d2570606a039c65e0e236fd329b5eecb10c"
 ).toLowerCase() as ModelRef;
 
 /**

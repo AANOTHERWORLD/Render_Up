@@ -22,7 +22,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 - `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override. A
   fully qualified `owner/model:version` reference avoids Replicate API 404s.
   Defaults to
-  `jagilley/controlnet-depth-sdxl:9ca98281fa9ba02b96c8a17cc4430ebdc80bd048393ca5c7d07212e08a3b3fc3`.
+  `lucataco/sdxl-controlnet-depth:465fb41789dc2203a9d7158be11d1d2570606a039c65e0e236fd329b5eecb10c`.
 - `PORT` – optional port (defaults to `8787`)
 - `ALLOWED_ORIGIN` – optional CORS origin; when unset all origins are allowed
 
