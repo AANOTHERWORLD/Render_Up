@@ -108,9 +108,16 @@ const server = http.createServer(async (req, res) => {
       }
 
       const preset = fields.preset as LightingPreset;
-      const strength = fields.strength ? Number(fields.strength) : undefined;
+      let strength = fields.strength ? Number(fields.strength) : undefined;
       const preserveComposition = fields.preserveComposition === "true";
       const upscale = fields.upscale;
+
+      // When preserving composition, tone down the effect by reducing the
+      // provided strength value before passing it to the model. This helps
+      // maintain more of the original image structure.
+      if (preserveComposition && typeof strength === "number") {
+        strength *= 0.5;
+      }
 
       let width: number | undefined;
       let height: number | undefined;
