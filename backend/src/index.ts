@@ -1,6 +1,7 @@
 import * as http from "node:http";
 import { randomUUID } from "node:crypto";
 import Busboy from "busboy";
+import sizeOf from "image-size";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 interface RequestBody {
@@ -111,6 +112,27 @@ const server = http.createServer(async (req, res) => {
       const preserveComposition = fields.preserveComposition === "true";
       const upscale = fields.upscale;
 
+      let width: number | undefined;
+      let height: number | undefined;
+      try {
+        const size = sizeOf(file);
+        width = size.width;
+        height = size.height;
+        if (upscale && upscale !== "native" && width && height) {
+          const factor = parseFloat(upscale);
+          if (!isNaN(factor)) {
+            width = Math.round(width * factor);
+            height = Math.round(height * factor);
+          }
+        }
+        if (width && height) {
+          width = Math.round(width / 8) * 8;
+          height = Math.round(height / 8) * 8;
+        }
+      } catch {
+        // ignore dimension errors
+      }
+
       const depthUrl = await runDepthAnythingV2(file);
       const prompt = PRESET_PROMPTS[preset] || "";
       const images = await runSDXLControlNetDepth({
@@ -119,12 +141,14 @@ const server = http.createServer(async (req, res) => {
         prompt,
         strength,
         controlnet_conditioning_scale: preserveComposition ? 1 : 0.5,
+        width,
+        height,
       });
 
       const response = {
         requestId: randomUUID(),
         images,
-        meta: { preset, strength, preserveComposition, upscale },
+        meta: { preset, strength, preserveComposition, upscale, width, height },
         depthUrl,
       };
 

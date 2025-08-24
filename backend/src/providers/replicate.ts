@@ -91,6 +91,8 @@ export interface ControlNetDepthInput {
   strength?: number;
   guidance_scale?: number;
   controlnet_conditioning_scale?: number;
+  width?: number;
+  height?: number;
 }
 
 export interface ControlNetDepthResponseObject {
