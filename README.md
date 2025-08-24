@@ -15,7 +15,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
-- `REPLICATE_DEPTH_MODEL` – optional depth model override (defaults to `chenxwh/depth-anything-v2`)
+- `REPLICATE_DEPTH_MODEL` – optional depth model override (defaults to `chenxwh/depth-anything-v2:b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4`)
 
 - `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
   (normalized to lowercase)

@@ -30,8 +30,8 @@ export const replicate = new Replicate({
 // Replicate model slugs are lowercase; normalize env override to prevent 404s
 const DEPTH_MODEL: ModelRef = getEnv(
   "REPLICATE_DEPTH_MODEL",
-  // Depth Anything V2 public model
-  "chenxwh/depth-anything-v2"
+  // Depth Anything V2 public model with pinned version
+  "chenxwh/depth-anything-v2:b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4"
 ).toLowerCase() as ModelRef;
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
