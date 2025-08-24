@@ -31,8 +31,12 @@ app.use(
   })
 );
 
-// configure CORS via environment; defaults to undefined (no restriction)
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN }));
+// configure CORS via environment; allow all origins when unset
+app.use(
+  process.env.ALLOWED_ORIGIN
+    ? cors({ origin: process.env.ALLOWED_ORIGIN })
+    : cors()
+);
 app.use(express.json());
 
 // In‑memory upload storage with a 20MB limit

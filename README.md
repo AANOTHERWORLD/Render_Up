@@ -5,7 +5,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 ## What is included
 
 - `frontend` Next.js app with a simple UI: upload, select lighting preset, strength, preserve toggle, size, compare slider.
-- `backend` TypeScript HTTP server (no Express) calling Replicate:
+- `backend` TypeScript Express server calling Replicate:
   - Depth Anything V2 for depth
   - SDXL ControlNet Depth for faithful regeneration
 
@@ -15,9 +15,12 @@ Turn architectural renderings into photoreal images with improved lighting and m
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
-- `REPLICATE_DEPTH_MODEL` – optional depth model override
+- `REPLICATE_DEPTH_MODEL` – optional depth model override (defaults to
+  `nvidia/depth-anything-v2`); value is normalized to lowercase
 - `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
+  (normalized to lowercase)
 - `PORT` – optional port (defaults to `8787`)
+- `ALLOWED_ORIGIN` – optional CORS origin; when unset all origins are allowed
 
 
 **Frontend**

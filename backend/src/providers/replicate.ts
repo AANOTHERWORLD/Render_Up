@@ -29,13 +29,14 @@ export const replicate = new Replicate({
 // public model references so the app can run without custom configuration.
 const DEPTH_MODEL: ModelRef = getEnv(
   "REPLICATE_DEPTH_MODEL",
-  "nvidia/Depth-Anything-V2"
-) as ModelRef;
+  // Replicate model slugs are lowercase; normalize env override to prevent 404s
+  "nvidia/depth-anything-v2"
+).toLowerCase() as ModelRef;
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
   "REPLICATE_CONTROLNET_DEPTH_MODEL",
   "stability-ai/sdxl-controlnet-depth"
-) as ModelRef;
+).toLowerCase() as ModelRef;
 
 // Normalize Replicate file outputs into plain URLs
 function toUrl(value: unknown): string | undefined {
