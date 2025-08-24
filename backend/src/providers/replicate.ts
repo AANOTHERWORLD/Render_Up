@@ -1,7 +1,10 @@
 import Replicate from "replicate";
 import type { Readable } from "node:stream";
+import pino from "pino";
 
 export type FileInput = Buffer | Readable | string;
+
+const logger = pino();
 
 // --- Add a template literal type for Replicate model references ---
 type ModelRef = `${string}/${string}` | `${string}/${string}:${string}`;
@@ -108,9 +111,6 @@ export async function runDepthAnythingV2(
     if (url) return url;
   }
 
-  throw new Error(
-    `Unexpected depth model output shape: ${sampleForLogging(out)}`
-  );
 }
 
 export interface ControlNetDepthInput {
