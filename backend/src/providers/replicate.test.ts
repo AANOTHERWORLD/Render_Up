@@ -44,6 +44,9 @@ test('runDepthAnythingV2 returns URL string from FileOutput', async () => {
   runMock.mock.restore();
 });
 
+
+});
+
 test('runSDXLControlNetDepth handles FileOutput image property', async () => {
   const fake = { toString: () => 'https://example.com/out.png' } as any;
   const runMock = mock.method(

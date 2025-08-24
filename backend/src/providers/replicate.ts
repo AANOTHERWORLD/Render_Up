@@ -49,6 +49,19 @@ function toUrl(value: unknown): string | undefined {
   return undefined;
 }
 
+function sampleForLogging(value: unknown, maxLength = 200): string {
+  try {
+    const json = JSON.stringify(
+      value,
+      (_key, v) =>
+        typeof v === "string" && v.length > 100 ? `${v.slice(0, 97)}...` : v
+    );
+    return json.slice(0, maxLength);
+  } catch {
+    return "[unserializable]";
+  }
+}
+
 export interface DepthAnythingV2ResponseObject {
   image?: string;
   images?: string[];
@@ -75,6 +88,19 @@ export async function runDepthAnythingV2(
     if (url) return url;
   }
 
+  if (
+    !Array.isArray(out) &&
+    typeof out === "object" &&
+    out !== null &&
+    typeof (out as any).toString === "function"
+  ) {
+    const url =
+      toUrl((out as any).url) ||
+      toUrl((out as any).data) ||
+      toUrl(out);
+    if (url) return url;
+  }
+
   if (!Array.isArray(out) && typeof out === "object" && out !== null) {
     const url =
       toUrl((out as any).image) ||
@@ -85,14 +111,6 @@ export async function runDepthAnythingV2(
     if (url) return url;
   }
 
-  logger.error(
-    {
-      outType: typeof out,
-      outKeys: typeof out === "object" && out !== null ? Object.keys(out as any) : undefined,
-    },
-    "Unexpected depth model output shape",
-  );
-  throw new Error("Unexpected depth model output shape");
 }
 
 export interface ControlNetDepthInput {
@@ -137,5 +155,7 @@ export async function runSDXLControlNetDepth(input: ControlNetDepthInput): Promi
     if (typeof (out as any).output === "string") return [(out as any).output];
   }
 
-  throw new Error("Unexpected ControlNet output shape");
+  throw new Error(
+    `Unexpected ControlNet output shape: ${sampleForLogging(out)}`
+  );
 }
