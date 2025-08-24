@@ -5,8 +5,7 @@ import UploadDropzone from "@/components/UploadDropzone";
 import Controls from "@/components/Controls";
 import CompareSlider from "@/components/CompareSlider";
 import type { EnhanceSettings, EnhanceResponse } from "@/lib/types";
-
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
+import { enhanceImage } from "@/lib/enhanceClient";
 
 export default function Page() {
   const [file, setFile] = useState<File | null>(null);
@@ -14,7 +13,7 @@ export default function Page() {
     preset: "neutral_overcast",
     strength: 0.35,
     preserveComposition: true,
-    upscale: "native"
+    upscale: "none"
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EnhanceResponse | null>(null);
@@ -24,20 +23,15 @@ export default function Page() {
     if (!file) return;
     setLoading(true); setError(null); setResult(null);
 
-    const form = new FormData();
-    form.append("image", file);
-    form.append("preset", settings.preset);
-    form.append("strength", settings.strength.toString());
-    form.append("preserveComposition", String(settings.preserveComposition));
-    form.append("upscale", settings.upscale);
-
     try {
-      const res = await fetch(`${API_BASE}/enhance`, {
-        method: "POST",
-        body: form
+      const data = await enhanceImage({
+        file,
+        preset: settings.preset,
+        strength: settings.strength,
+        preserve_composition: settings.preserveComposition,
+        upscale: settings.upscale,
+        mode: "sync"
       });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json() as EnhanceResponse;
       setResult(data);
     } catch (e: any) {
       setError(e.message || "Unknown error");
@@ -70,20 +64,16 @@ export default function Page() {
         </div>
       </section>
 
-      {result && result.images?.length > 0 && file && (
+      {result && result.output?.image && file && (
         <section className="space-y-4">
           <h2 className="text-xl font-medium">Result</h2>
           <CompareSlider
             beforeUrl={URL.createObjectURL(file)}
-            afterUrl={result.images[0]}
+            afterUrl={result.output.image}
           />
-          <div className="text-sm text-zinc-600">
-            <div>Request ID: {result.requestId}</div>
-            {result.depthUrl && <div className="truncate">Depth map: <a className="underline" href={result.depthUrl} target="_blank">open</a></div>}
-          </div>
           <div className="flex gap-3">
             <a
-              href={result.images[0]}
+              href={result.output.image}
               target="_blank"
               className="px-4 py-2 rounded-lg border"
             >

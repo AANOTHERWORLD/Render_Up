@@ -1,3 +1,5 @@
+import type { EnhanceResponse } from "./types";
+
 export async function enhanceImage({
   file,
   imageUrl,
@@ -9,12 +11,12 @@ export async function enhanceImage({
 }: {
   file?: File;
   imageUrl?: string;
-  preset?: "neutral_overcast"|"golden_hour"|"dramatic";
+  preset?: "neutral_overcast"|"golden_hour"|"dramatic"|"dramatic_contrast";
   strength?: number;
   preserve_composition?: boolean;
   upscale?: "none"|"2x"|"4x";
   mode?: "sync"|"async";
-}) {
+}): Promise<EnhanceResponse> {
   const form = new FormData();
   if (file) form.append("file", file);
   if (imageUrl) form.append("imageUrl", imageUrl);
