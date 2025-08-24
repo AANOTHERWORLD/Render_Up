@@ -1,16 +1,11 @@
 import * as http from "node:http";
 import { randomUUID } from "node:crypto";
-import Busboy from "busboy";
+import multer from "multer";
 import sizeOf from "image-size";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 interface RequestBody {
   [key: string]: any;
-}
-
-interface ParsedForm {
-  fields: Record<string, string>;
-  file?: Buffer;
 }
 
 type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
@@ -21,37 +16,10 @@ const PRESET_PROMPTS: Record<LightingPreset, string> = {
   dramatic_contrast: "dramatic high contrast lighting, photoreal architecture",
 };
 
-function parseMultipart(req: http.IncomingMessage): Promise<ParsedForm> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers, limits: { files: 1 } });
-    const fields: Record<string, string> = {};
-    let fileBuffer: Buffer | undefined;
-
-    busboy.on("field", (name, value) => {
-      fields[name] = value;
-    });
-
-    busboy.on("file", (name, file) => {
-      if (name !== "image") {
-        file.resume();
-        return;
-      }
-      const chunks: Buffer[] = [];
-      file.on("data", chunk => chunks.push(chunk));
-      file.on("end", () => {
-        fileBuffer = Buffer.concat(chunks);
-      });
-    });
-
-    busboy.on("finish", () => {
-      resolve({ fields, file: fileBuffer });
-    });
-
-    busboy.on("error", reject);
-
-    req.pipe(busboy);
-  });
-}
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
 
 function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
   return new Promise((resolve, reject) => {
@@ -99,7 +67,25 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && req.url === "/enhance") {
-      const { fields, file } = await parseMultipart(req);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          upload.single("image")(req as any, res as any, err => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+      } catch (err) {
+        if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+          res.statusCode = 413;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "File too large" }));
+          return;
+        }
+        throw err;
+      }
+
+      const file = (req as any).file?.buffer as Buffer | undefined;
+      const fields = (req as any).body as Record<string, string>;
       if (!file) {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
