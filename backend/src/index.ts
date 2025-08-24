@@ -5,6 +5,9 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 import { randomUUID } from "node:crypto";
 import sizeOf from "image-size";
+import { promises as fs } from "fs";
+import { tmpdir } from "os";
+import path from "path";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 // Lighting presets supported by the enhance endpoint
@@ -71,12 +74,16 @@ app.post("/controlnet", async (req, res) => {
 });
 
 app.post("/enhance", upload.single("image"), async (req, res) => {
+  let tmpPath: string | undefined;
   try {
     const file = req.file?.buffer;
     if (!file) {
       res.status(400).json({ error: "Missing image" });
       return;
     }
+
+    tmpPath = path.join(tmpdir(), `${randomUUID()}.png`);
+    await fs.writeFile(tmpPath, file);
 
     const preset = req.body.preset as LightingPreset;
     let strength = req.body.strength ? Number(req.body.strength) : undefined;
@@ -110,10 +117,13 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
       // ignore dimension errors
     }
 
-    const depthUrl = await runDepthAnythingV2(file);
+    const depthUrl = await runDepthAnythingV2(tmpPath);
+    if (!depthUrl) {
+      throw new Error("Depth map generation failed");
+    }
     const prompt = PRESET_PROMPTS[preset] || "";
     const images = await runSDXLControlNetDepth({
-      image: file,
+      image: tmpPath,
       control_image: depthUrl,
       prompt,
       strength,
@@ -132,6 +142,10 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
   } catch (err) {
     req.log.error(err as Error);
     res.status(500).json({ error: (err as Error).message });
+  } finally {
+    if (tmpPath) {
+      await fs.unlink(tmpPath).catch(() => {});
+    }
   }
 });
 
