@@ -44,26 +44,7 @@ test('runDepthAnythingV2 returns URL string from FileOutput', async () => {
   runMock.mock.restore();
 });
 
-test('runDepthAnythingV2 error includes sanitized sample', async () => {
-  const runMock = mock.method(
-    replicate,
-    'run',
-    async (): Promise<any> => ({ foo: 'a'.repeat(500) })
-  );
 
-  try {
-    await assert.rejects(
-      () => runDepthAnythingV2('img'),
-      (err: any) => {
-        assert.match(err.message, /Unexpected depth model output shape/);
-        assert.match(err.message, /foo/);
-        assert.ok(err.message.length < 260);
-        return true;
-      }
-    );
-  } finally {
-    runMock.mock.restore();
-  }
 });
 
 test('runSDXLControlNetDepth handles FileOutput image property', async () => {

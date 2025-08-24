@@ -85,6 +85,19 @@ export async function runDepthAnythingV2(
     if (url) return url;
   }
 
+  if (
+    !Array.isArray(out) &&
+    typeof out === "object" &&
+    out !== null &&
+    typeof (out as any).toString === "function"
+  ) {
+    const url =
+      toUrl((out as any).url) ||
+      toUrl((out as any).data) ||
+      toUrl(out);
+    if (url) return url;
+  }
+
   if (!Array.isArray(out) && typeof out === "object" && out !== null) {
     const url =
       toUrl((out as any).image) ||
