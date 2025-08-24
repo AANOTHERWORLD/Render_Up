@@ -11,12 +11,14 @@ Turn architectural renderings into photoreal images with improved lighting and m
 
 ## Environment variables
 
+
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
 - `REPLICATE_DEPTH_MODEL` – optional depth model override
 - `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
 - `PORT` – optional port (defaults to `8787`)
+
 
 **Frontend**
 
@@ -27,8 +29,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 1. Backend
    ```bash
    cd backend
-   npm install
-   # set env vars (at least REPLICATE_API_TOKEN)
+
    npm run build
    npm start
    ```
@@ -36,6 +37,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
 2. Frontend
    ```bash
    cd frontend
+
    npm install
    # create .env.local with NEXT_PUBLIC_API_BASE_URL
    npm run dev
@@ -45,10 +47,3 @@ Turn architectural renderings into photoreal images with improved lighting and m
 
 ## Deploy
 
- - Backend on Railway. Set the environment variables described above.
- - Frontend on Vercel. Set `NEXT_PUBLIC_API_BASE_URL` to the Railway service URL.
-
-## Notes
-
- - Model versions default to public ones but can be overridden via environment variables.
-- Logs include a request id and timing for debugging.
