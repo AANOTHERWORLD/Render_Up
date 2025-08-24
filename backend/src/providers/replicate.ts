@@ -42,6 +42,34 @@ const CONTROLNET_MODEL: ModelRef = getEnv(
   "jagilley/controlnet-depth-sdxl"
 ).toLowerCase() as ModelRef;
 
+/**
+ * Replicate's JS client posts to a model-specific endpoint when a model
+ * reference omits the version. Some models – including community models –
+ * don't expose that endpoint and instead require a fully qualified
+ * `owner/model:version` reference. When the version is missing, resolve the
+ * latest version via the Models API and retry with an explicit version.
+ */
+async function runWithResolvedVersion(
+  ref: ModelRef,
+  options: Parameters<typeof replicate.run>[1]
+): Promise<unknown> {
+  if (!ref.includes(":")) {
+    try {
+      const [owner, name] = ref.split("/");
+      const model = await replicate.models.get(owner, name);
+      const version = (model as any)?.latest_version?.id as string | undefined;
+      if (version) {
+        ref = `${ref}:${version}` as ModelRef;
+      } else {
+        logger.warn({ model: ref }, "Unable to resolve latest version");
+      }
+    } catch (err) {
+      logger.error(err as Error, "Failed to fetch model info");
+    }
+  }
+  return replicate.run(ref, options);
+}
+
 // Normalize Replicate file outputs into plain URLs
 function toUrl(value: unknown): string | undefined {
   if (typeof value === "string") return value;
@@ -78,7 +106,7 @@ export async function runDepthAnythingV2(
   image: FileInput,
   modelSize: "Large" | "Base" = "Large"
 ): Promise<string> {
-  const out = (await replicate.run(DEPTH_MODEL, {
+  const out = (await runWithResolvedVersion(DEPTH_MODEL, {
     input: { image, model: modelSize }
   })) as unknown as DepthAnythingV2Response;
 
@@ -141,7 +169,7 @@ export async function runSDXLControlNetDepth(input: ControlNetDepthInput): Promi
   const filtered = Object.fromEntries(
     Object.entries(input).filter(([, v]) => v !== undefined)
   );
-  const out = (await replicate.run(CONTROLNET_MODEL, {
+  const out = (await runWithResolvedVersion(CONTROLNET_MODEL, {
     input: { ...defaults, ...filtered }
   })) as unknown as ControlNetDepthResponse;
 

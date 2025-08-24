@@ -4,6 +4,11 @@ import assert from 'node:assert/strict';
 import { runSDXLControlNetDepth, runDepthAnythingV2, replicate } from './replicate';
 
 test('runSDXLControlNetDepth applies defaults when options undefined', async () => {
+  const getMock = mock.method(
+    replicate.models,
+    'get',
+    async () => ({ latest_version: { id: 'v1' } }) as any
+  );
   const runMock = mock.method(
     replicate,
     'run',
@@ -29,6 +34,7 @@ test('runSDXLControlNetDepth applies defaults when options undefined', async () 
   assert.equal(input.num_inference_steps, 30);
   assert.equal(input.controlnet_conditioning_scale, 1.0);
   runMock.mock.restore();
+  getMock.mock.restore();
 });
 
 test('runDepthAnythingV2 returns URL string from FileOutput', async () => {
@@ -46,6 +52,11 @@ test('runDepthAnythingV2 returns URL string from FileOutput', async () => {
 
 test('runSDXLControlNetDepth handles FileOutput image property', async () => {
   const fake = { toString: () => 'https://example.com/out.png' } as any;
+  const getMock = mock.method(
+    replicate.models,
+    'get',
+    async () => ({ latest_version: { id: 'v1' } }) as any
+  );
   const runMock = mock.method(
     replicate,
     'run',
@@ -60,9 +71,15 @@ test('runSDXLControlNetDepth handles FileOutput image property', async () => {
 
   assert.deepEqual(res, ['https://example.com/out.png']);
   runMock.mock.restore();
+  getMock.mock.restore();
 });
 
 test('runSDXLControlNetDepth forwards width and height', async () => {
+  const getMock = mock.method(
+    replicate.models,
+    'get',
+    async () => ({ latest_version: { id: 'v1' } }) as any
+  );
   const runMock = mock.method(
     replicate,
     'run',
@@ -81,5 +98,6 @@ test('runSDXLControlNetDepth forwards width and height', async () => {
   assert.equal(input.width, 512);
   assert.equal(input.height, 768);
   runMock.mock.restore();
+  getMock.mock.restore();
 });
 
