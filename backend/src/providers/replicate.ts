@@ -30,8 +30,7 @@ export const replicate = new Replicate({
 // Replicate model slugs are lowercase; normalize env override to prevent 404s
 const DEPTH_MODEL: ModelRef = getEnv(
   "REPLICATE_DEPTH_MODEL",
-  "nvidia/depth-anything-v2"
-).toLowerCase() as ModelRef;
+
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
   "REPLICATE_CONTROLNET_DEPTH_MODEL",
