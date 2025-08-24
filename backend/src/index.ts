@@ -5,6 +5,7 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 import { randomUUID } from "node:crypto";
 import sizeOf from "image-size";
+import cors from "cors";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
 
 type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
@@ -36,6 +37,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 },
 });
+
 
   }
 });
