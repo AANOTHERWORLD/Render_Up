@@ -15,7 +15,8 @@ Turn architectural renderings into photoreal images with improved lighting and m
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
-- `REPLICATE_DEPTH_MODEL` – optional depth model override
+- `REPLICATE_DEPTH_MODEL` – optional depth model override (defaults to
+  `nvidia/depth-anything-v2`)
 - `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
 - `PORT` – optional port (defaults to `8787`)
 
