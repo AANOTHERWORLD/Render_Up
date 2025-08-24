@@ -5,7 +5,7 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 import { randomUUID } from "node:crypto";
 import sizeOf from "image-size";
-import { promises as fs } from "fs";
+import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
@@ -83,7 +83,7 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
     }
 
     tmpPath = path.join(tmpdir(), `${randomUUID()}.png`);
-    await fs.writeFile(tmpPath, file);
+    await fs.promises.writeFile(tmpPath, file);
 
     const preset = req.body.preset as LightingPreset;
     let strength = req.body.strength ? Number(req.body.strength) : undefined;
@@ -117,13 +117,13 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
       // ignore dimension errors
     }
 
-    const depthUrl = await runDepthAnythingV2(tmpPath);
+    const depthUrl = await runDepthAnythingV2(fs.createReadStream(tmpPath));
     if (!depthUrl) {
       throw new Error("Depth map generation failed");
     }
     const prompt = PRESET_PROMPTS[preset] || "";
     const images = await runSDXLControlNetDepth({
-      image: tmpPath,
+      image: fs.createReadStream(tmpPath),
       control_image: depthUrl,
       prompt,
       strength,
@@ -144,7 +144,7 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: (err as Error).message });
   } finally {
     if (tmpPath) {
-      await fs.unlink(tmpPath).catch(() => {});
+      await fs.promises.unlink(tmpPath).catch(() => {});
     }
   }
 });
