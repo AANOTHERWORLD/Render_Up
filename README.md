@@ -15,7 +15,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
    ```bash
    cd backend
    cp .env.example .env
-   # set REPLICATE_API_TOKEN
+   # configure PORT, ALLOWED_ORIGIN, REPLICATE_API_TOKEN and model IDs
    npm install
    npm run dev
    ```
@@ -24,6 +24,7 @@ Turn architectural renderings into photoreal images with improved lighting and m
    ```bash
    cd frontend
    cp .env.example .env.local
+   # set NEXT_PUBLIC_API_BASE_URL to your backend URL
    npm install
    npm run dev
    ```
@@ -37,5 +38,5 @@ Turn architectural renderings into photoreal images with improved lighting and m
 
 ## Notes
 
-- Model versions are pinned in `.env.example` for reproducibility.
+- Model versions are pinned in `backend/.env.example` for reproducibility.
 - Logs include a request id and timing for debugging.
