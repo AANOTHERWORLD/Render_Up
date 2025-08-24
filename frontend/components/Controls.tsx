@@ -64,7 +64,9 @@ export default function Controls({ settings, onChange, disabled }: Props) {
         <select
           className="w-full border rounded-lg px-3 py-2"
           value={settings.upscale}
-          onChange={e => onChange({ ...settings, upscale: e.target.value as any })}
+          onChange={e =>
+            onChange({ ...settings, upscale: e.target.value as "native" | "1.5x" })
+          }
           disabled={disabled}
         >
           <option value="native">Native</option>
