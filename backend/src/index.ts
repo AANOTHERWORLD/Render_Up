@@ -148,7 +148,11 @@ const server = http.createServer(async (req, res) => {
       const response = {
         requestId: randomUUID(),
         images,
-        meta: { preset, strength, preserveComposition, upscale, width, height },
+        preset,
+        upscale,
+        width,
+        height,
+        meta: { prompt, strength, preserveComposition },
         depthUrl,
       };
 
