@@ -68,13 +68,7 @@ app.post("/enhance", upload.single("image"), async (req, res) => {
 
         }
       }
-      if (width && height) {
-        width = Math.round(width / 8) * 8;
-        height = Math.round(height / 8) * 8;
-      }
-    } catch {
-      // ignore dimension errors
-    }
+
 
     const depthUrl = await runDepthAnythingV2(file);
     const prompt = PRESET_PROMPTS[preset] || "";
