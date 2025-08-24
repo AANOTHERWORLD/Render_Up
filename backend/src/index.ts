@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
-import pino from "pino";
 import pinoHttp from "pino-http";
 import { randomUUID } from "node:crypto";
 import sizeOf from "image-size";
@@ -9,6 +8,8 @@ import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 import { runDepthAnythingV2, runSDXLControlNetDepth } from "./providers/replicate";
+import { enhanceRouter } from "./routes/enhance";
+import { logger } from "./utils/logger";
 
 // Lighting presets supported by the enhance endpoint
 export type LightingPreset = "neutral_overcast" | "golden_hour" | "dramatic_contrast";
@@ -21,11 +22,9 @@ const PRESET_PROMPTS: Record<LightingPreset, string> = {
 
 const app = express();
 
-// structured logging
-const logger = pino();
 app.use(
   pinoHttp({
-    logger,
+    logger: logger as any,
     genReqId: () => randomUUID(),
     customProps: req => ({
       requestId: req.id,
@@ -41,6 +40,7 @@ app.use(
     : cors()
 );
 app.use(express.json());
+app.use("/api/enhance", enhanceRouter);
 
 // In‑memory upload storage with a 20MB limit
 const upload = multer({
