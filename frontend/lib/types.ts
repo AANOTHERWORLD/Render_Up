@@ -4,12 +4,17 @@ export interface EnhanceSettings {
   preset: LightingPreset;
   strength: number; // 0 to 1
   preserveComposition: boolean;
-  upscale: "native" | "1.5x";
+  upscale: "none" | "2x" | "4x";
 }
 
 export interface EnhanceResponse {
-  requestId: string;
-  images: string[]; // URLs to images
-  meta: Record<string, any>;
-  depthUrl?: string;
+  status: string;
+  input: {
+    preset: LightingPreset;
+    preserve_composition?: boolean;
+    upscale: "none" | "2x" | "4x";
+  };
+  output: {
+    image: string;
+  };
 }
