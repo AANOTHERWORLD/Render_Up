@@ -19,9 +19,10 @@ Turn architectural renderings into photoreal images with improved lighting and m
   version, the backend resolves the latest model version automatically. The
   default is `chenxwh/depth-anything-v2:b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4`.
 
-- `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override. When
-  no version is provided the backend fetches the latest version to avoid API
-  404 errors. Defaults to `jagilley/controlnet-depth-sdxl`.
+- `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override. A
+  fully qualified `owner/model:version` reference avoids Replicate API 404s.
+  Defaults to
+  `jagilley/controlnet-depth-sdxl:9ca98281fa9ba02b96c8a17cc4430ebdc80bd048393ca5c7d07212e08a3b3fc3`.
 - `PORT` – optional port (defaults to `8787`)
 - `ALLOWED_ORIGIN` – optional CORS origin; when unset all origins are allowed
 
