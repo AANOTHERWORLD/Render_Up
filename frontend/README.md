@@ -7,7 +7,7 @@ Next.js app for the Architectural Photo Regenerator.
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
+# create .env.local with NEXT_PUBLIC_API_BASE_URL
 npm run dev
 ```
 
