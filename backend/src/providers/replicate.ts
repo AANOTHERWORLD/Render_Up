@@ -93,6 +93,23 @@ function sampleForLogging(value: unknown, maxLength = 200): string {
   }
 }
 
+// Replicate's client accepts either strings or raw binary data (Buffer/Blob)
+// for file inputs. Our application sometimes provides Node.js Readable
+// streams which the client library does not automatically handle. When a
+// stream is passed through unchanged, it ends up serialized as an object in
+// the request payload which the Replicate API rejects with a 422 error. To
+// avoid that, convert any Readable stream into a Buffer before forwarding the
+// request to the client.
+async function normalizeFileInput(file: FileInput): Promise<string | Buffer> {
+  if (typeof file === "string" || Buffer.isBuffer(file)) return file;
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of file as Readable) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
 export interface DepthAnythingV2ResponseObject {
   image?: string;
   images?: string[];
@@ -109,8 +126,9 @@ export async function runDepthAnythingV2(
   image: FileInput,
   modelSize: "Large" | "Base" = "Large"
 ): Promise<string> {
+  const img = await normalizeFileInput(image);
   const out = (await runWithResolvedVersion(DEPTH_MODEL, {
-    input: { image, model: modelSize }
+    input: { image: img, model: modelSize }
   })) as unknown as DepthAnythingV2Response;
 
   if (typeof out === "string") return out;
@@ -172,6 +190,17 @@ export async function runSDXLControlNetDepth(input: ControlNetDepthInput): Promi
   const filtered = Object.fromEntries(
     Object.entries(input).filter(([, v]) => v !== undefined)
   );
+
+  // Ensure any stream inputs are converted to Buffers before calling the API
+  if (filtered.image) {
+    filtered.image = await normalizeFileInput(filtered.image as FileInput);
+  }
+  if (filtered.control_image) {
+    filtered.control_image = await normalizeFileInput(
+      filtered.control_image as FileInput
+    );
+  }
+
   const out = (await runWithResolvedVersion(CONTROLNET_MODEL, {
     input: { ...defaults, ...filtered }
   })) as unknown as ControlNetDepthResponse;
