@@ -31,7 +31,7 @@ export const replicate = new Replicate({
 const DEPTH_MODEL: ModelRef = getEnv(
   "REPLICATE_DEPTH_MODEL",
   // Depth Anything V2 public model
-  "nateraw/depth-anything-v2"
+  "chenxwh/depth-anything-v2"
 ).toLowerCase() as ModelRef;
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
