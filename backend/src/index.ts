@@ -72,7 +72,7 @@ function parseJson(req: http.IncomingMessage): Promise<RequestBody> {
 
 const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
@@ -82,6 +82,12 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
+    if (req.method === "GET" && req.url === "/health") {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ ok: true }));
+      return;
+    }
+
     if (req.method === "POST" && req.url === "/depth") {
       const body = await parseJson(req);
       const output = await runDepthAnythingV2(body.image, body.modelSize);
