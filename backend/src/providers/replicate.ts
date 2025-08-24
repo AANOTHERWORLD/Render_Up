@@ -39,7 +39,7 @@ const DEPTH_MODEL: ModelRef = getEnv(
 
 const CONTROLNET_MODEL: ModelRef = getEnv(
   "REPLICATE_CONTROLNET_DEPTH_MODEL",
-  "stability-ai/sdxl-controlnet-depth"
+  "jagilley/controlnet-depth-sdxl"
 ).toLowerCase() as ModelRef;
 
 // Normalize Replicate file outputs into plain URLs
