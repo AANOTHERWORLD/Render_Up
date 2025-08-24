@@ -15,10 +15,13 @@ Turn architectural renderings into photoreal images with improved lighting and m
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
-- `REPLICATE_DEPTH_MODEL` – optional depth model override (defaults to `chenxwh/depth-anything-v2:b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4`)
+- `REPLICATE_DEPTH_MODEL` – optional depth model override. If the value omits a
+  version, the backend resolves the latest model version automatically. The
+  default is `chenxwh/depth-anything-v2:b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4`.
 
-- `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override
-  (defaults to `jagilley/controlnet-depth-sdxl`, normalized to lowercase)
+- `REPLICATE_CONTROLNET_DEPTH_MODEL` – optional ControlNet model override. When
+  no version is provided the backend fetches the latest version to avoid API
+  404 errors. Defaults to `jagilley/controlnet-depth-sdxl`.
 - `PORT` – optional port (defaults to `8787`)
 - `ALLOWED_ORIGIN` – optional CORS origin; when unset all origins are allowed
 
