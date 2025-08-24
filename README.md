@@ -11,6 +11,8 @@ Turn architectural renderings into photoreal images with improved lighting and m
 
 ## Environment variables
 
+Example settings are provided in `.env.example` files for both the backend and frontend.
+
 **Backend**
 
 - `REPLICATE_API_TOKEN` – required API token for Replicate
