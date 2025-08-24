@@ -62,3 +62,24 @@ test('runSDXLControlNetDepth handles FileOutput image property', async () => {
   runMock.mock.restore();
 });
 
+test('runSDXLControlNetDepth forwards width and height', async () => {
+  const runMock = mock.method(
+    replicate,
+    'run',
+    async (): Promise<any> => ['img']
+  );
+
+  await runSDXLControlNetDepth({
+    image: 'img',
+    control_image: 'ctrl',
+    prompt: 'prompt',
+    width: 512,
+    height: 768,
+  });
+
+  const input = (runMock.mock.calls[0].arguments[1] as any).input as any;
+  assert.equal(input.width, 512);
+  assert.equal(input.height, 768);
+  runMock.mock.restore();
+});
+
